@@ -68,32 +68,34 @@ jobs:
 
           line_start = html.rfind("\n", 0, picture_start) + 1
           indent = html[line_start:picture_start]
-
-          new = f'''<picture>
-{indent}  <source
-{indent}    media="(max-width: 640px)"
-{indent}    type="image/webp"
-{indent}    srcset="images/lagoa-pampulha-640x480.webp"
-{indent}    width="640"
-{indent}    height="480"
-{indent}  />
-{indent}  <source
-{indent}    media="(max-width: 1024px)"
-{indent}    type="image/webp"
-{indent}    srcset="images/lagoa-pampulha-960x640.webp"
-{indent}    width="960"
-{indent}    height="640"
-{indent}  />
-{indent}  <img
-{indent}    src="images/lagoa-pampulha-1200x675.webp"
-{indent}    alt="Lagoa da Pampulha em Belo Horizonte à noite"
-{indent}    class="w-full object-cover"
-{indent}    width="1200"
-{indent}    height="675"
-{indent}    loading="lazy"
-{indent}    decoding="async"
-{indent}  />
-{indent}</picture>'''
+          new_lines = [
+              "<picture>",
+              indent + "  <source",
+              indent + '    media="(max-width: 640px)"',
+              indent + '    type="image/webp"',
+              indent + '    srcset="images/lagoa-pampulha-640x480.webp"',
+              indent + '    width="640"',
+              indent + '    height="480"',
+              indent + "  />",
+              indent + "  <source",
+              indent + '    media="(max-width: 1024px)"',
+              indent + '    type="image/webp"',
+              indent + '    srcset="images/lagoa-pampulha-960x640.webp"',
+              indent + '    width="960"',
+              indent + '    height="640"',
+              indent + "  />",
+              indent + "  <img",
+              indent + '    src="images/lagoa-pampulha-1200x675.webp"',
+              indent + '    alt="Lagoa da Pampulha em Belo Horizonte à noite"',
+              indent + '    class="w-full object-cover"',
+              indent + '    width="1200"',
+              indent + '    height="675"',
+              indent + '    loading="lazy"',
+              indent + '    decoding="async"',
+              indent + "  />",
+              indent + "</picture>",
+          ]
+          new = "\n".join(new_lines)
 
           page_path.write_text(
               html[:picture_start] + new + html[picture_end:],
