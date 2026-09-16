@@ -6,6 +6,9 @@ on:
       - feature/aulas-beach-tennis-pampulha
     paths:
       - .github/workflows/generate-pampulha-responsive-images.yml
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: write
