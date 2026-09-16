@@ -1,0 +1,365 @@
+name: Reposition Pampulha content
+
+on:
+  push:
+    branches:
+      - feature/aulas-beach-tennis-pampulha
+    paths:
+      - .github/workflows/reposition-pampulha-content.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update-content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/aulas-beach-tennis-pampulha
+
+      - name: Reposition page content
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("aulas-beach-tennis-pampulha.html")
+          html = path.read_text(encoding="utf-8")
+
+          def replace_once(old, new, label):
+              global html
+              count = html.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected 1 occurrence, found {count}")
+              html = html.replace(old, new, 1)
+
+          def replace_count(old, new, expected, label):
+              global html
+              count = html.count(old)
+              if count != expected:
+                  raise SystemExit(f"{label}: expected {expected} occurrences, found {count}")
+              html = html.replace(old, new)
+
+          replace_once(
+              '    <title>Aulas de Beach Tennis na Pampulha, BH | Professora Raíssa</title>',
+              '    <title>Professora de Beach Tennis para sua Quadra na Pampulha | Raíssa</title>',
+              'title',
+          )
+          replace_once(
+              '      content="Aulas de Beach Tennis na região da Pampulha, em Belo Horizonte, com a professora Raíssa Carvalho. Treinos para iniciantes, intermediários e praticantes que querem evoluir."',
+              '      content="Professora de Beach Tennis na Pampulha para aulas e treinamentos em quadras, condomínios, clubes e arenas. Para alunos com quadra definida e responsáveis por espaços esportivos."',
+              'meta description',
+          )
+          replace_once(
+              '      content="aulas de beach tennis Pampulha, professora de beach tennis Pampulha, beach tennis Belo Horizonte, aula beach tennis Santa Amélia, beach tennis Avenida Fleming, beach tennis Ouro Preto BH"',
+              '      content="professora de beach tennis Pampulha, professora para quadra de beach tennis, aulas de beach tennis em condomínio, professora para arena de beach tennis, aulas beach tennis Pampulha, beach tennis Belo Horizonte, Santa Amélia, Avenida Fleming, Ouro Preto BH"',
+              'meta keywords',
+          )
+          replace_once(
+              '      content="Aulas de Beach Tennis na Pampulha, BH | Professora Raíssa"',
+              '      content="Professora de Beach Tennis para sua Quadra na Pampulha | Raíssa"',
+              'og title',
+          )
+          replace_once(
+              '      content="Treine Beach Tennis na região da Pampulha, em Belo Horizonte, com acompanhamento da professora Raíssa Carvalho."',
+              '      content="Já tem uma quadra ou administra um espaço de Beach Tennis na Pampulha? Leve aulas e treinamentos com a professora Raíssa Carvalho para o seu local."',
+              'og description',
+          )
+          replace_once(
+              '            "description": "Aulas de Beach Tennis na região da Pampulha, em Belo Horizonte, para diferentes níveis de prática, conforme disponibilidade e local da quadra.",',
+              '            "description": "Aulas e treinamentos de Beach Tennis na região da Pampulha para alunos que já possuem uma quadra definida e para responsáveis por quadras, clubes e arenas que procuram uma professora especialista.",',
+              'service schema description',
+          )
+          replace_once(
+              '                "name": "Onde acontecem as aulas de Beach Tennis na Pampulha?",',
+              '                "name": "Já tenho uma quadra específica. A Raíssa pode dar aula nela?",',
+              'schema faq location question',
+          )
+          replace_once(
+              '                  "text": "O local depende da disponibilidade e do formato da aula. A professora Raíssa atende na região da Pampulha e pode combinar a quadra de acordo com a necessidade do aluno e a agenda."',
+              '                  "text": "Sim. A proposta é atender alunos que já têm acesso a uma quadra em condomínio, clube, arena ou outro espaço da Pampulha, conforme agenda e autorização de uso do local."',
+              'schema faq location answer',
+          )
+          replace_once(
+              '                  "text": "Sim. Há possibilidade de treinos particulares e em dupla, conforme disponibilidade, objetivo e local da quadra."',
+              '                  "text": "Sim. Há possibilidade de treinos particulares e em dupla na quadra indicada pelo aluno, conforme disponibilidade, objetivo e autorização de uso do espaço."',
+              'schema faq format answer',
+          )
+
+          schema_third = '              {\n                "@type": "Question",\n                "name": "É possível fazer aula particular ou em dupla?",\n                "acceptedAnswer": {\n                  "@type": "Answer",\n                  "text": "Sim. Há possibilidade de treinos particulares e em dupla na quadra indicada pelo aluno, conforme disponibilidade, objetivo e autorização de uso do espaço."\n                }\n              }'
+          schema_with_owner = schema_third + ',\n              {\n                "@type": "Question",\n                "name": "Sou responsável por uma quadra ou arena. Posso conversar com a Raíssa sobre aulas no espaço?",\n                "acceptedAnswer": {\n                  "@type": "Answer",\n                  "text": "Sim. Responsáveis por quadras, clubes e arenas da região da Pampulha podem consultar disponibilidade e conversar sobre formatos de aulas e treinamentos no espaço."\n                }\n              }'
+          replace_once(schema_third, schema_with_owner, 'schema owner faq')
+
+          old_header_link = 'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Vi%20a%20pagina%20sobre%20aulas%20de%20Beach%20Tennis%20na%20Pampulha%20e%20quero%20saber%20sobre%20horarios%20e%20locais.'
+          new_header_link = 'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Tenho%20acesso%20a%20uma%20quadra%20na%20Pampulha%20e%20quero%20consultar%20aulas%20ou%20treinamentos%20no%20local.'
+          replace_count(old_header_link, new_header_link, 2, 'header whatsapp')
+          replace_count('Agendar aula', 'Consultar atendimento', 2, 'header button labels')
+
+          replace_once(
+              '              Aulas de Beach Tennis na\n              <span class="text-amber-300">Pampulha</span>',
+              '              Professora de Beach Tennis para sua\n              <span class="text-amber-300">quadra na Pampulha</span>',
+              'hero heading',
+          )
+          replace_once(
+              '              Treinos com a professora Raíssa Carvalho para quem está começando,\n              já joga e quer evoluir ou procura acompanhamento mais direcionado\n              na região da Pampulha, em Belo Horizonte.',
+              '              Já tem uma quadra no condomínio, clube ou arena? Ou administra um\n              espaço de Beach Tennis e procura uma professora experiente? Raíssa\n              Carvalho leva aulas e treinamentos técnicos até a quadra indicada,\n              conforme agenda e disponibilidade de atendimento na Pampulha.',
+              'hero paragraph',
+          )
+          replace_once(
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Quero%20saber%20sobre%20aulas%20de%20Beach%20Tennis%20na%20regiao%20da%20Pampulha.%20Meu%20bairro%20e%3A%20%5Bpreencher%5D.%20Meu%20nivel%20e%3A%20%5Bpreencher%5D.',
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Ja%20tenho%20uma%20quadra%20para%20treinar%20na%20Pampulha.%20Bairro%3A%20%5Bpreencher%5D.%20Local%20da%20quadra%3A%20%5Bpreencher%5D.%20Meu%20nivel%3A%20%5Bpreencher%5D.',
+              'hero primary whatsapp',
+          )
+          replace_once('                Consultar horários no WhatsApp', '                Já tenho uma quadra para treinar', 'hero primary label')
+          replace_once('                href="#como-funciona"', '                href="#para-quadras"', 'hero secondary href')
+          replace_once('                Como funcionam as aulas', '                Sou dono de quadra ou arena', 'hero secondary label')
+
+          replace_once(
+              '              Perto da sua rotina',
+              '              Sua quadra, sua rotina',
+              'region eyebrow',
+          )
+          replace_once(
+              '              Para quem mora, trabalha ou circula pela região da Pampulha',
+              '              Para quem já tem uma quadra na região da Pampulha',
+              'region heading',
+          )
+          replace_once(
+              '              A página é voltada a alunos que procuram professora de Beach\n              Tennis na Pampulha e nos bairros próximos. O local de treino é\n              combinado conforme a disponibilidade da professora, do aluno e da\n              quadra.',
+              '              A proposta é atender alunos que já possuem acesso a uma quadra e\n              responsáveis por espaços esportivos que procuram uma professora de\n              Beach Tennis para atuar no local. Você informa onde fica a quadra;\n              a Raíssa verifica agenda e possibilidade de atendimento.',
+              'region intro',
+          )
+          replace_once(
+              '            O atendimento em cada bairro depende de agenda e disponibilidade de\n            quadra. Consulte a professora antes de se deslocar.',
+              '            O atendimento em cada bairro depende da agenda da professora e da\n            disponibilidade e autorização de uso da quadra indicada. Consulte a\n            Raíssa antes de confirmar o treino.',
+              'region note',
+          )
+
+          marker = '      <section\n        class="bg-gradient-to-br from-cyan-700 via-sky-900 to-slate-950 py-20 text-white sm:py-28"\n      >'
+          if html.count(marker) != 1:
+              raise SystemExit(f"audience section marker: expected 1 occurrence, found {html.count(marker)}")
+
+          audience_lines = [
+              '      <section id="para-quadras" class="bg-yellow-50 py-20 sm:py-28">',
+              '        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">',
+              '          <div class="mx-auto max-w-4xl text-center">',
+              '            <p class="mb-4 text-sm font-black uppercase tracking-[0.25em] text-cyan-700">',
+              '              A professora certa para a quadra que você já tem',
+              '            </p>',
+              '            <h2 class="text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">',
+              '              A quadra já existe. Falta colocar uma professora especialista dentro dela.',
+              '            </h2>',
+              '            <p class="mt-5 text-lg leading-8 text-slate-700">',
+              '              Em vez de procurar onde treinar, você pode levar um acompanhamento técnico',
+              '              de alto nível para a quadra que já faz parte da sua rotina ou do seu negócio.',
+              '            </p>',
+              '          </div>',
+              '',
+              '          <div class="mt-14 grid gap-6 lg:grid-cols-2">',
+              '            <article class="rounded-[2rem] border border-cyan-100 bg-white p-8 shadow-sm">',
+              '              <p class="text-sm font-black uppercase tracking-[0.18em] text-cyan-700">',
+              '                Para proprietários e gestores',
+              '              </p>',
+              '              <h3 class="mt-3 text-3xl font-black text-slate-950">',
+              '                Tem uma quadra, arena ou clube e procura uma professora de referência?',
+              '              </h3>',
+              '              <p class="mt-5 leading-7 text-slate-700">',
+              '                Se você administra um espaço de Beach Tennis na Pampulha, pode consultar a',
+              '                Raíssa para aulas, treinamentos, formação de turmas ou demandas específicas',
+              '                do seu público, sempre conforme agenda e formato combinado.',
+              '              </p>',
+              '              <a',
+              '                href="https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Sou%20responsavel%20por%20uma%20quadra%20ou%20arena%20de%20Beach%20Tennis%20na%20Pampulha%20e%20quero%20conversar%20sobre%20aulas%20e%20treinamentos%20no%20espaco."',
+              '                target="_blank"',
+              '                rel="noopener noreferrer"',
+              '                class="mt-7 inline-flex items-center justify-center rounded-full bg-cyan-700 px-6 py-4 font-black text-white transition hover:-translate-y-1 hover:bg-slate-950"',
+              '              >',
+              '                Tenho uma quadra ou arena',
+              '              </a>',
+              '            </article>',
+              '',
+              '            <article class="rounded-[2rem] border border-amber-200 bg-amber-50 p-8 shadow-sm">',
+              '              <p class="text-sm font-black uppercase tracking-[0.18em] text-amber-700">',
+              '                Para alunos e grupos',
+              '              </p>',
+              '              <h3 class="mt-3 text-3xl font-black text-slate-950">',
+              '                Já tem a quadra onde quer treinar? Leve a professora até o seu local.',
+              '              </h3>',
+              '              <p class="mt-5 leading-7 text-slate-700">',
+              '                Pode ser a quadra do condomínio, de um clube, uma arena de preferência,',
+              '                uma quadra particular ou outro espaço reservado. Informe o endereço, seu',
+              '                nível e objetivo; a Raíssa verifica disponibilidade para atender no local.',
+              '              </p>',
+              '              <a',
+              '                href="https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Ja%20tenho%20uma%20quadra%20onde%20quero%20treinar%20na%20Pampulha.%20Bairro%3A%20%5Bpreencher%5D.%20Quadra%3A%20%5Bpreencher%5D.%20Nivel%3A%20%5Bpreencher%5D."',
+              '                target="_blank"',
+              '                rel="noopener noreferrer"',
+              '                class="mt-7 inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-4 font-black text-slate-950 transition hover:-translate-y-1 hover:bg-white"',
+              '              >',
+              '                Quero aula na minha quadra',
+              '              </a>',
+              '            </article>',
+              '          </div>',
+              '        </div>',
+              '      </section>',
+          ]
+          audience_section = "\n".join(audience_lines)
+          html = html.replace(marker, audience_section + "\n\n" + marker, 1)
+
+          replace_once(
+              '              Combine nível, bairro e formato de treino',
+              '              Você define a quadra. O treino é estruturado para o seu objetivo',
+              'how it works heading',
+          )
+          replace_once(
+              '              Para verificar uma aula na Pampulha, o caminho é simples: informe\n              seu bairro, seu nível atual e se procura treino individual, em\n              dupla ou outro formato. A partir disso, a professora verifica\n              agenda e opções de local.',
+              '              Se você já tem acesso a uma quadra, informe o local, seu nível e o\n              objetivo do treino. Se administra uma quadra ou arena, conte que\n              tipo de atendimento procura. A partir disso, a Raíssa verifica a\n              agenda e combina o formato possível para o espaço.',
+              'how it works intro',
+          )
+          replace_once('                    Informe onde você está', '                    Informe a quadra', 'step 1 heading')
+          replace_once(
+              '                    Diga seu bairro ou a região da quadra que pretende utilizar.',
+              '                    Envie o bairro e identifique o condomínio, clube, arena ou espaço onde o treino poderá acontecer.',
+              'step 1 body',
+          )
+          replace_once('                    Conte seu nível e objetivo', '                    Diga quem você é e o que procura', 'step 2 heading')
+          replace_once(
+              '                    Primeiro contato, evolução técnica, treino em dupla ou\n                    preparação para jogar melhor.',
+              '                    Aluno, grupo ou responsável pela quadra: informe nível, formato desejado e objetivo do atendimento.',
+              'step 2 body',
+          )
+          replace_once('                    Consulte horários e local', '                    Combine formato e agenda', 'step 3 heading')
+          replace_once(
+              '                    A disponibilidade é confirmada antes do agendamento,\n                    evitando deslocamento sem combinação prévia.',
+              '                    A Raíssa confirma a possibilidade de atendimento naquela quadra e os horários compatíveis antes do agendamento.',
+              'step 3 body',
+          )
+          replace_once(
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Quero%20verificar%20uma%20aula%20na%20Pampulha.%20Bairro%3A%20%5Bpreencher%5D.%20Nivel%3A%20%5Bpreencher%5D.%20Formato%20de%20aula%3A%20%5Bpreencher%5D.',
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Quero%20consultar%20atendimento%20em%20uma%20quadra%20na%20Pampulha.%20Sou%3A%20%5Baluno%2Fresponsavel%20pela%20quadra%5D.%20Bairro%3A%20%5Bpreencher%5D.%20Quadra%3A%20%5Bpreencher%5D.%20Objetivo%3A%20%5Bpreencher%5D.',
+              'how it works whatsapp',
+          )
+          replace_once('              Consultar disponibilidade', '              Consultar atendimento na quadra', 'how it works cta')
+
+          replace_once(
+              '              Experiência de quadra levada para a aula',
+              '              Experiência que agrega valor ao treino e à sua quadra',
+              'teacher heading',
+          )
+          replace_once(
+              '              Raíssa combina atuação como professora com trajetória competitiva\n              em Beach Tennis. Essa vivência ajuda a transformar fundamentos em\n              escolhas de jogo, exercícios e correções que fazem sentido dentro\n              de uma partida.',
+              '              Raíssa combina atuação como professora com trajetória competitiva\n              em Beach Tennis. Para o aluno, isso significa treino técnico com\n              correções aplicadas a situações reais de jogo. Para quem administra\n              uma quadra, significa contar com uma profissional experiente para\n              compor a experiência oferecida aos praticantes do espaço.',
+              'teacher paragraph',
+          )
+
+          replace_once(
+              '                Onde acontecem as aulas na Pampulha?',
+              '                Já tenho uma quadra no condomínio, clube ou arena. A Raíssa pode dar aula nela?',
+              'visible faq location question',
+          )
+          replace_once(
+              '                O local depende da disponibilidade e do formato da aula. A\n                professora atende na região da Pampulha e combina a quadra\n                conforme agenda, necessidade do aluno e possibilidade de uso do\n                espaço.',
+              '                Sim. Essa é a proposta: você informa a quadra onde já pode treinar,\n                e a Raíssa verifica agenda e possibilidade de atendimento no local.\n                O uso do espaço deve estar autorizado pelo responsável pela quadra.',
+              'visible faq location answer',
+          )
+          replace_once(
+              '                Sim, conforme disponibilidade. No contato pelo WhatsApp, informe\n                o formato desejado para que a professora verifique as\n                possibilidades de agenda e local.',
+              '                Sim, conforme disponibilidade. Informe o formato desejado e a\n                quadra que será utilizada para que a professora verifique agenda e\n                possibilidade de atendimento no local.',
+              'visible faq private answer',
+          )
+
+          neighborhood_faq = '            <details\n              class="group rounded-[2rem] border border-amber-200 bg-white p-6 shadow-sm"\n            >\n              <summary\n                class="cursor-pointer list-none pr-8 text-lg font-black text-slate-950"\n              >\n                Moro em Santa Amélia, Ouro Preto, Castelo ou perto da Fleming.\n                Como verifico atendimento?\n              </summary>\n              <p class="mt-4 leading-7 text-slate-700">\n                Envie seu bairro, nível e preferência de horário. A professora\n                confirma se há agenda e opção de quadra compatível antes de\n                qualquer deslocamento.\n              </p>\n            </details>'
+          owner_faq_lines = [
+              '            <details',
+              '              class="group rounded-[2rem] border border-amber-200 bg-white p-6 shadow-sm"',
+              '            >',
+              '              <summary',
+              '                class="cursor-pointer list-none pr-8 text-lg font-black text-slate-950"',
+              '              >',
+              '                Sou dono ou responsável por uma quadra de Beach Tennis. Posso contratar a Raíssa para atender no espaço?',
+              '              </summary>',
+              '              <p class="mt-4 leading-7 text-slate-700">',
+              '                É possível consultar disponibilidade para aulas e treinamentos no',
+              '                espaço. Envie a localização da quadra e explique o formato que procura',
+              '                para que a Raíssa avalie agenda e possibilidades de atendimento.',
+              '              </p>',
+              '            </details>',
+              '',
+              '            <details',
+              '              class="group rounded-[2rem] border border-cyan-100 bg-white p-6 shadow-sm"',
+              '            >',
+              '              <summary',
+              '                class="cursor-pointer list-none pr-8 text-lg font-black text-slate-950"',
+              '              >',
+              '                Minha quadra fica em Santa Amélia, Ouro Preto, Castelo ou perto da Fleming. Como verifico atendimento?',
+              '              </summary>',
+              '              <p class="mt-4 leading-7 text-slate-700">',
+              '                Envie o bairro, a identificação da quadra e a preferência de horário.',
+              '                A professora confirma se há agenda e possibilidade de deslocamento até',
+              '                o local antes de qualquer agendamento.',
+              '              </p>',
+              '            </details>',
+          ]
+          replace_once(neighborhood_faq, "\n".join(owner_faq_lines), 'owner and neighborhood faq')
+
+          replace_once('            Treine na Pampulha', '            Sua quadra já está escolhida', 'final cta eyebrow')
+          replace_once(
+              '            Quer encontrar uma aula de Beach Tennis perto da sua rotina?',
+              '            Agora escolha quem vai conduzir o treino na sua quadra',
+              'final cta heading',
+          )
+          replace_once(
+              '            Envie seu bairro, nível e tipo de aula pelo WhatsApp. A Raíssa\n            verifica horários e as possibilidades de local na região da\n            Pampulha.',
+              '            Se você é aluno, envie a quadra, seu nível e objetivo. Se administra\n            uma quadra, clube ou arena, conte que tipo de aulas ou treinamentos\n            deseja oferecer. A Raíssa verifica a possibilidade de atendimento.',
+              'final cta paragraph',
+          )
+          replace_once(
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Vim%20pela%20pagina%20da%20Pampulha.%20Meu%20bairro%20e%3A%20%5Bpreencher%5D.%20Meu%20nivel%20e%3A%20%5Bpreencher%5D.%20Quero%20saber%20sobre%20horarios%20e%20locais%20para%20aula.',
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Ja%20tenho%20uma%20quadra%20na%20Pampulha%20e%20quero%20consultar%20aulas%20ou%20treinamentos%20no%20local.%20Bairro%3A%20%5Bpreencher%5D.%20Quadra%3A%20%5Bpreencher%5D.',
+              'final student whatsapp',
+          )
+          replace_once('              Chamar no WhatsApp', '              Quero aula na minha quadra', 'final student label')
+
+          old_instagram_cta = 'https://www.instagram.com/raissacarvalho90?igsh=MTMxc2phbm03emJjdQ=='
+          final_section_start = html.find('      <section\n        id="contato"')
+          final_section_end = html.find('      </section>', final_section_start)
+          if final_section_start < 0 or final_section_end < 0:
+              raise SystemExit('final section not found')
+          final_section_end += len('      </section>')
+          final_section = html[final_section_start:final_section_end]
+          if final_section.count(old_instagram_cta) != 1:
+              raise SystemExit(f"final instagram cta: expected 1 occurrence, found {final_section.count(old_instagram_cta)}")
+          final_section = final_section.replace(
+              old_instagram_cta,
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Sou%20responsavel%20por%20uma%20quadra%20ou%20arena%20na%20Pampulha%20e%20quero%20conversar%20sobre%20aulas%20e%20treinamentos%20no%20espaco.',
+              1,
+          )
+          final_section = final_section.replace('              Instagram da professora', '              Tenho uma quadra ou arena', 1)
+          html = html[:final_section_start] + final_section + html[final_section_end:]
+
+          replace_once(
+              '            Aulas de Beach Tennis em Belo Horizonte e região.',
+              '            Aulas e treinamentos em quadras, condomínios, clubes e arenas de Belo Horizonte.',
+              'footer description',
+          )
+          replace_once(
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Vim%20pela%20pagina%20de%20aulas%20na%20Pampulha%20e%20quero%20saber%20mais.',
+              'https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Vim%20pela%20pagina%20da%20Pampulha%20e%20tenho%20uma%20quadra%20onde%20gostaria%20de%20ter%20aulas%20ou%20treinamentos.',
+              'floating whatsapp',
+          )
+
+          path.write_text(html, encoding="utf-8")
+          PY
+
+      - name: Commit page changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add aulas-beach-tennis-pampulha.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Reposition Pampulha page for court owners and students"
+            git push origin HEAD:feature/aulas-beach-tennis-pampulha
+          fi
