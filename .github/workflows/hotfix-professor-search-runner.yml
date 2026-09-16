@@ -20,18 +20,7 @@ jobs:
           ref: master
 
       - name: Apply SEO hotfix
-        run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-          workflow = Path('.github/workflows/hotfix-professor-search.yml').read_text(encoding='utf-8')
-          match = re.search(r"echo '([A-Za-z0-9+/=]+)'", workflow)
-          if not match:
-              raise SystemExit('Encoded hotfix script not found')
-          Path('/tmp/hotfix.b64').write_text(match.group(1), encoding='ascii')
-          PY
-          base64 -d /tmp/hotfix.b64 > /tmp/hotfix.py
-          python /tmp/hotfix.py
+        run: python .github/hotfix-professor-search.py
 
       - name: Commit SEO hotfix
         run: |
