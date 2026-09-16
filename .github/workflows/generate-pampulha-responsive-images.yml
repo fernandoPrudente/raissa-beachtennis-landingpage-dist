@@ -1,0 +1,116 @@
+name: Generate Pampulha responsive images
+
+on:
+  push:
+    branches:
+      - feature/aulas-beach-tennis-pampulha
+    paths:
+      - .github/workflows/generate-pampulha-responsive-images.yml
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/aulas-beach-tennis-pampulha
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Generate responsive WebP crops and update picture markup
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageOps
+
+          source_path = Path("images/lagoa-pampulha-1200x807.png")
+          source = Image.open(source_path).convert("RGB")
+
+          variants = [
+              (Path("images/lagoa-pampulha-640x480.webp"), (640, 480)),
+              (Path("images/lagoa-pampulha-960x640.webp"), (960, 640)),
+              (Path("images/lagoa-pampulha-1200x675.webp"), (1200, 675)),
+          ]
+
+          for output_path, size in variants:
+              cropped = ImageOps.fit(
+                  source,
+                  size,
+                  method=Image.Resampling.LANCZOS,
+                  centering=(0.5, 0.5),
+              )
+              cropped.save(output_path, "WEBP", quality=80, method=6)
+              print(f"generated {output_path}: {size[0]}x{size[1]} ({output_path.stat().st_size} bytes)")
+
+          page_path = Path("aulas-beach-tennis-pampulha.html")
+          html = page_path.read_text(encoding="utf-8")
+
+          old = '''              <picture>
+                <source
+                  media="(max-width: 640px)"
+                  srcset="images/lagoa-pampulha-1200x807.png"
+                />
+                <img
+                  src="images/lagoa-pampulha-1200x807.png"
+                  alt="Lagoa da Pampulha em Belo Horizonte à noite"
+                  class="aspect-[16/9] w-full object-cover"
+                  width="1280"
+                  height="852"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>'''
+
+          new = '''              <picture>
+                <source
+                  media="(max-width: 640px)"
+                  type="image/webp"
+                  srcset="images/lagoa-pampulha-640x480.webp"
+                  width="640"
+                  height="480"
+                />
+                <source
+                  media="(max-width: 1024px)"
+                  type="image/webp"
+                  srcset="images/lagoa-pampulha-960x640.webp"
+                  width="960"
+                  height="640"
+                />
+                <img
+                  src="images/lagoa-pampulha-1200x675.webp"
+                  alt="Lagoa da Pampulha em Belo Horizonte à noite"
+                  class="w-full object-cover"
+                  width="1200"
+                  height="675"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>'''
+
+          if old not in html:
+              raise SystemExit("Expected Lagoa da Pampulha <picture> block was not found; refusing to modify the page.")
+
+          page_path.write_text(html.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Commit generated assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add aulas-beach-tennis-pampulha.html images/lagoa-pampulha-640x480.webp images/lagoa-pampulha-960x640.webp images/lagoa-pampulha-1200x675.webp
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Optimize Pampulha image for responsive screens"
+            git push origin HEAD:feature/aulas-beach-tennis-pampulha
+          fi
