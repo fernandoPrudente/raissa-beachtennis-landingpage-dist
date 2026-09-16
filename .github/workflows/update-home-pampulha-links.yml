@@ -1,0 +1,195 @@
+name: Update Home Pampulha links
+
+on:
+  push:
+    branches:
+      - feature/aulas-beach-tennis-pampulha
+    paths:
+      - .github/workflows/update-home-pampulha-links.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update-home:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/aulas-beach-tennis-pampulha
+
+      - name: Update Home links and regional section
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("index.html")
+          html = path.read_text(encoding="utf-8")
+
+          # Keep the Home WhatsApp number consistent with the Pampulha landing page.
+          html = html.replace("553193281642", "5531993281642")
+          html = html.replace("+553193281642", "+5531993281642")
+
+          def insert_after_unique_link(html, href_fragment, addition):
+              marker = f'href="{href_fragment}'
+              start = html.find(marker)
+              if start < 0:
+                  raise SystemExit(f"Link marker not found: {href_fragment}")
+              end = html.find("</a>", start)
+              if end < 0:
+                  raise SystemExit(f"Closing anchor not found for: {href_fragment}")
+              end += len("</a>")
+              if addition.strip() in html:
+                  return html
+              return html[:end] + addition + html[end:]
+
+          html = insert_after_unique_link(
+              html,
+              "https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Vim%20pelo%20site%20e%20tenho%20interesse%20em%20aula%20particular%20em%20quadra%20especifica.",
+              '''
+
+              <a
+                href="aulas-beach-tennis-pampulha"
+                class="mt-4 inline-flex items-center text-sm font-black text-cyan-700 transition hover:text-slate-950"
+              >
+                Tem uma quadra na Pampulha? Veja o atendimento na região →
+              </a>'''
+          )
+
+          html = insert_after_unique_link(
+              html,
+              "https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Vim%20pelo%20site%20e%20sou%20responsavel%20por%20uma%20quadra.",
+              '''
+
+              <a
+                href="aulas-beach-tennis-pampulha"
+                class="mt-4 inline-flex items-center text-sm font-black text-amber-300 transition hover:text-white"
+              >
+                Sua quadra fica na Pampulha? Conheça o atendimento →
+              </a>'''
+          )
+
+          old_section = '''      <section class="bg-yellow-50 py-16">
+        <div class="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+          <h2 class="text-3xl font-black text-slate-950">
+            Beach Tennis em Belo Horizonte com atendimento próximo
+          </h2>
+
+          <p class="mt-5 text-lg leading-8 text-slate-700">
+            A professora Raissa atende alunos que buscam aulas de Beach Tennis
+            em Belo Horizonte, Ribeirão das Neves e região metropolitana. Seja
+            para começar no esporte, melhorar sua técnica ou estruturar aulas em
+            uma quadra, o foco é entregar treino com método, constância e
+            identidade.
+          </p>
+        </div>
+      </section>'''
+
+          new_section = '''      <section class="bg-yellow-50 py-16 sm:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="mx-auto max-w-3xl text-center">
+            <p
+              class="mb-4 text-sm font-black uppercase tracking-[0.25em] text-cyan-700"
+            >
+              Atendimento por região
+            </p>
+            <h2 class="text-3xl font-black text-slate-950 sm:text-5xl">
+              Beach Tennis em Belo Horizonte e região
+            </h2>
+            <p class="mt-5 text-lg leading-8 text-slate-700">
+              A professora Raissa atende alunos, grupos e responsáveis por
+              quadras em Belo Horizonte, Ribeirão das Neves e região
+              metropolitana, conforme agenda e disponibilidade de deslocamento.
+            </p>
+          </div>
+
+          <div class="mt-10 grid gap-6 md:grid-cols-[1.15fr_0.85fr]">
+            <article
+              class="rounded-[2rem] border border-cyan-100 bg-gradient-to-br from-white via-cyan-50 to-amber-50 p-8 shadow-lg"
+            >
+              <p
+                class="text-sm font-black uppercase tracking-[0.18em] text-cyan-700"
+              >
+                Pampulha e bairros próximos
+              </p>
+              <h3 class="mt-3 text-3xl font-black text-slate-950">
+                Já tem uma quadra na Pampulha ou administra um espaço na região?
+              </h3>
+              <p class="mt-4 leading-7 text-slate-700">
+                Na Pampulha, o atendimento é direcionado a alunos que já têm
+                acesso a uma quadra e a proprietários ou gestores de condomínios,
+                clubes e arenas que procuram uma professora especialista para
+                aulas e treinamentos. O atendimento também pode alcançar outros
+                bairros da região da Pampulha e áreas próximas.
+              </p>
+              <a
+                href="aulas-beach-tennis-pampulha"
+                class="mt-7 inline-flex items-center justify-center rounded-full bg-cyan-700 px-6 py-4 font-black text-white transition hover:-translate-y-1 hover:bg-slate-950"
+              >
+                Ver atendimento na Pampulha →
+              </a>
+            </article>
+
+            <article
+              class="rounded-[2rem] border border-amber-200 bg-white p-8 shadow-sm"
+            >
+              <p
+                class="text-sm font-black uppercase tracking-[0.18em] text-amber-700"
+              >
+                Outras regiões
+              </p>
+              <h3 class="mt-3 text-3xl font-black text-slate-950">
+                Consulte atendimento perto da sua quadra
+              </h3>
+              <p class="mt-4 leading-7 text-slate-700">
+                Para outras regiões de Belo Horizonte, Ribeirão das Neves e
+                região metropolitana, informe o bairro, a quadra e o formato de
+                aula desejado para verificar a possibilidade de atendimento.
+              </p>
+              <a
+                href="https://wa.me/5531993281642?text=Oi%2C%20Raissa!%20Quero%20consultar%20atendimento%20de%20Beach%20Tennis%20na%20minha%20regiao.%20Bairro%3A%20%5Bpreencher%5D.%20Quadra%3A%20%5Bpreencher%5D."
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-7 inline-flex items-center justify-center rounded-full border-2 border-amber-400 px-6 py-4 font-black text-slate-950 transition hover:-translate-y-1 hover:bg-amber-400"
+              >
+                Consultar outra região
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>'''
+
+          if old_section not in html:
+              raise SystemExit("Expected generic regional Home section not found")
+          html = html.replace(old_section, new_section, 1)
+
+          footer_marker = '''          <a
+            href="#servicos"
+            class="text-sm font-semibold text-white/70 hover:text-amber-300"
+            >Aulas</a
+          >'''
+          footer_addition = footer_marker + '''
+          <a
+            href="aulas-beach-tennis-pampulha"
+            class="text-sm font-semibold text-white/70 hover:text-amber-300"
+            >Pampulha</a
+          >'''
+          if footer_marker not in html:
+              raise SystemExit("Footer Aulas link not found")
+          html = html.replace(footer_marker, footer_addition, 1)
+
+          path.write_text(html, encoding="utf-8")
+          PY
+
+      - name: Commit Home changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No Home changes to commit"
+          else
+            git commit -m "Link Home to Pampulha landing page"
+            git push origin HEAD:feature/aulas-beach-tennis-pampulha
+          fi
