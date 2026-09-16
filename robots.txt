@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.raissabeachtennis.com.br/sitemap.xml
